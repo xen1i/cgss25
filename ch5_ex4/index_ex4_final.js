@@ -1,8 +1,10 @@
-import * as THREE from './modules/three.module.js';
+import * as THREE from "./modules/three.module.js";
+import { OBJLoader } from './modules/OBJLoader.js';
 
 main();
 
 function main() {
+    console.log("main gestartet"); // Debug-Ausgabe
     // create context
     const canvas = document.querySelector("#c");
     const gl = new THREE.WebGLRenderer({
@@ -26,7 +28,7 @@ function main() {
     // create the scene
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0.3, 0.5, 0.8);
-    const fog = new THREE.Fog("grey", 1,90);
+    const fog = new THREE.Fog("grey", 1, 90);
     scene.fog = fog;
 
     // GEOMETRY
@@ -36,7 +38,7 @@ function main() {
         cubeSize,
         cubeSize,
         cubeSize
-    );  
+    );
 
     // Create the Sphere
     const sphereRadius = 3;
@@ -50,7 +52,7 @@ function main() {
 
     // Create the upright plane
     const planeWidth = 256;
-    const planeHeight =  128;
+    const planeHeight = 128;
     const planeGeometry = new THREE.PlaneGeometry(
         planeWidth,
         planeHeight
@@ -71,7 +73,7 @@ function main() {
         normalMap: sphereNormalMap
     });
 
-    
+
     const planeTextureMap = textureLoader.load('textures/pebbles.jpg');
     planeTextureMap.wrapS = THREE.RepeatWrapping;
     planeTextureMap.wrapT = THREE.RepeatWrapping;
@@ -87,7 +89,7 @@ function main() {
     const planeMaterial = new THREE.MeshStandardMaterial({
         map: planeTextureMap,
         side: THREE.DoubleSide,
-        normalMap: planeNorm 
+        normalMap: planeNorm
     });
 
     // MESHES
@@ -118,7 +120,7 @@ function main() {
     scene.add(ambientLight);
 
     // DRAW
-    function draw(time){
+    function draw(time) {
         time *= 0.001;
 
         if (resizeGLToDisplaySize(gl)) {
@@ -126,7 +128,7 @@ function main() {
             camera.aspect = canvas.clientWidth / canvas.clientHeight;
             camera.updateProjectionMatrix();
         }
-        
+
         cube.rotation.x += 0.01;
         cube.rotation.y += 0.01;
         cube.rotation.z += 0.01;
@@ -135,13 +137,43 @@ function main() {
         sphere.rotation.y += 0.01;
         sphere.rotation.y += 0.01;
 
-        light.position.x = 20*Math.cos(time);
-        light.position.y = 20*Math.sin(time);
+        light.position.x = 20 * Math.cos(time);
+        light.position.y = 20 * Math.sin(time);
         gl.render(scene, camera);
         requestAnimationFrame(draw);
     }
 
     requestAnimationFrame(draw);
+    const modelTexture = textureLoader.load('textures/stone.jpg');
+    modelTexture.wrapS = THREE.RepeatWrapping;
+    modelTexture.wrapT = THREE.RepeatWrapping;
+
+    const objLoader = new OBJLoader();
+    objLoader.load(
+        'models/teapot.obj',
+        function (mesh) {
+            const material = new THREE.MeshPhongMaterial({ map: modelTexture });
+
+            mesh.traverse(function (child) {
+                if (child.isMesh) {
+                    child.material = material;
+                    child.castShadow = true;
+                }
+            });
+
+            mesh.position.set(-15, 2, 0);
+            mesh.rotation.set(-Math.PI / 2, 0, 0);
+            mesh.scale.set(0.005, 0.005, 0.005);
+
+            scene.add(mesh);
+        },
+        function (xhr) {
+            console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+        },
+        function (error) {
+            console.error('An error happened:', error);
+        }
+    );
 }
 
 // UPDATE RESIZE
