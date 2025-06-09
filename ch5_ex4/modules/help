@@ -1,0 +1,30 @@
+    const modelTexture = textureLoader.load('textures/stone.jpg');
+    modelTexture.wrapS = THREE.RepeatWrapping;
+    modelTexture.wrapT = THREE.RepeatWrapping;
+
+    var objLoader = new THREE.OBJLoader();
+    objLoader.load(
+        'teapot.obj',
+        function (mesh) {
+            var material = new THREE.MeshPhongMaterial({ map: modelTexture });
+
+            mesh.traverse(function (child) {
+                if (child.isMesh) {
+                    child.material = material;
+                    child.castShadow = true;
+                }
+            });
+
+            mesh.position.set(-15, 2, 0);
+            mesh.rotation.set(-Math.PI / 2, 0, 0);
+            mesh.scale.set(0.005, 0.005, 0.005);
+
+            scene.add(mesh);
+        },
+        function (xhr) {
+            console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+        },
+        function (error) {
+            console.error('An error happened:', error);
+        }
+    );
